@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Typing Speed Master</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXX" crossorigin="anonymous"></script>
+</head>
+<body class="dark-mode">
+    <div class="landscape-warning">
+        <span style="font-size: 3rem;">📱</span>
+        <h2>Please rotate your device</h2>
+        <p>This app is optimized for portrait mode.</p>
+    </div>
+    <div id="app">
+        <!-- Leaderboard Ad -->
+        <div class="ad-container leaderboard">
+            <ins class="adsbygoogle"
+                 style="display:block"
+                 data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+                 data-ad-slot="LEADERBOARD_SLOT"
+                 data-ad-format="auto"
+                 data-full-width-responsive="true"></ins>
+            <script>
+                 (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+        <!-- Landing Screen -->
+        <section id="screen-landing" class="screen active">
+            <header>
+                <h1>Typing Speed Master</h1>
+                <p>Master your typing for your specific goals.</p>
+                <div id="resume-badge" class="resume-badge" style="display: none;">
+                    <span id="resume-text">Continue: Lesson 1 (Code)</span>
+                    <button id="btn-resume">Resume</button>
+                </div>
+            </header>
+            <div class="mode-selection">
+                <h2>Select Your Mode</h2>
+                <div class="modes-grid">
+                    <button class="mode-card" data-mode="interview">
+                        <span class="icon">💼</span>
+                        <h3>Job Interview</h3>
+                        <p>Interview phrases & emails</p>
+                    </button>
+                    <button class="mode-card" data-mode="code">
+                        <span class="icon">💻</span>
+                        <h3>Code</h3>
+                        <p>JS, Python, HTML/CSS</p>
+                    </button>
+                    <button class="mode-card" data-mode="student">
+                        <span class="icon">🎓</span>
+                        <h3>Student</h3>
+                        <p>Academic drills & essays</p>
+                    </button>
+                    <button class="mode-card" data-mode="casual">
+                        <span class="icon">☕</span>
+                        <h3>Casual</h3>
+                        <p>Quotes & fun facts</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lesson Selection Screen -->
+        <section id="screen-lessons" class="screen">
+            <nav class="top-nav">
+                <button class="btn-back" id="back-to-modes">← Back</button>
+                <div class="mode-badge" id="current-mode-display">Mode: Code</div>
+            </nav>
+            <header>
+                <h2>Lessons</h2>
+                <div class="overall-progress">
+                    <div class="progress-bar-container">
+                        <div id="total-progress-bar" class="progress-bar"></div>
+                    </div>
+                    <span id="progress-text">0/7 Lessons</span>
+                </div>
+            </header>
+            <div id="lessons-list" class="lessons-grid">
+                <!-- Lessons will be injected here -->
+            </div>
+        </section>
+
+        <!-- Typing Interface Screen -->
+        <section id="screen-typing" class="screen">
+            <!-- Leaderboard Ad Above Typing Area -->
+            <div class="ad-container leaderboard above-typing">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+                     data-ad-slot="TYPING_LEADERBOARD_SLOT"
+                     data-ad-format="horizontal"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+            <nav class="top-nav">
+                <button class="btn-back" id="back-to-lessons">← Exit</button>
+                <div id="typing-lesson-title">Lesson 1: Home Row</div>
+                <div class="stats-live">
+                    <span id="live-wpm">0 WPM</span>
+                    <span id="live-accuracy">100% ACC</span>
+                </div>
+            </nav>
+            
+            <div class="typing-container">
+                <div class="lesson-meta">
+                    <span id="lesson-focus">Focus: Home Row basics</span>
+                    <div class="progress-mini">
+                        <div id="lesson-progress-bar" class="progress-bar"></div>
+                    </div>
+                </div>
+
+                <div id="text-display" class="text-display">
+                    <!-- Text to type will be injected here -->
+                </div>
+
+                <div class="input-area">
+                    <input type="text" id="typing-input" autocomplete="off" autofocus placeholder="Start typing...">
+                </div>
+
+                <div id="keyboard" class="keyboard">
+                    <!-- Simple visual keyboard -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Screen -->
+        <section id="screen-results" class="screen">
+            <div class="results-card">
+                <h2>Lesson Complete!</h2>
+                <div class="stats-final">
+                    <div class="stat-item">
+                        <span class="stat-value" id="final-wpm">0</span>
+                        <span class="stat-label">WPM</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="final-accuracy">0%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                </div>
+                <div class="results-actions">
+                    <button id="retry-lesson" class="btn-secondary">Retry</button>
+                    <button id="next-lesson" class="btn-primary">Next Lesson</button>
+                </div>
+            </div>
+            <!-- Footer Ad on Results Screen -->
+            <div class="ad-container footer-ad">
+                <ins class="adsbygoogle"
+                     style="display:block"
+                     data-ad-client="ca-pub-XXXXXXXXXXXXXXX"
+                     data-ad-slot="RESULTS_FOOTER_SLOT"
+                     data-ad-format="auto"
+                     data-full-width-responsive="true"></ins>
+                <script>
+                     (adsbygoogle = window.adsbygoogle || []).push({});
+                </script>
+            </div>
+        </section>
+
+        <!-- Certificate Screen (Lesson 7) -->
+        <section id="screen-certificate" class="screen">
+            <div id="certificate-container" class="certificate">
+                <h3>CERTIFICATE OF COMPLETION</h3>
+                <p>This certifies that the user has completed</p>
+                <h2 id="cert-mode">CODE MODE</h2>
+                <p>at Typing Speed Master</p>
+                <div class="cert-stats">
+                    <span id="cert-wpm">50 WPM</span>
+                    <span id="cert-accuracy">98% Accuracy</span>
+                </div>
+                <div class="cert-date" id="cert-date">Feb 16, 2026</div>
+            </div>
+            <button id="download-cert" class="btn-primary">Download Image</button>
+            <button id="close-cert" class="btn-secondary">Back to Menu</button>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
