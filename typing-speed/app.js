@@ -10,7 +10,6 @@ const CONTENT = {
     { title: "Mixed Practice", focus: "Emails", text: "Dear Hiring Manager, I am writing to express my interest in the Software Engineer position." },
     { title: "Speed Test", focus: "The Big One", text: "I am confident that my skills in project management and team collaboration make me a strong candidate for this role. I look forward to discussing how I can contribute to your team's success." }
   ],
-
   code: [
     { title: "Home Row Basics", focus: "Home row", text: "asdf jkl; a s d f j k l ; asdf jkl; fads jalk lads jals" },
     { title: "Top Row & Punctuation", focus: "Top row", text: "qwer uiop {} [] () <> ! @ # $ % ^ & * + = _ - | \\" },
@@ -20,7 +19,6 @@ const CONTENT = {
     { title: "Mixed Practice", focus: "Full script", text: "import React from 'react'; export const Button = ({ label, onClick }) => <button onClick={onClick}>{label}</button>;" },
     { title: "Speed Test", focus: "Real Logic", text: "async function fetchData(url) { try { const response = await fetch(url); const json = await response.json(); return json.filter(item => item.active); } catch (e) { console.error(e); } }" }
   ],
-
   student: [
     { title: "Home Row Basics", focus: "Home row", text: "asdf jkl; a s d f j k l ; asdf jkl; fads jalk lads jals" },
     { title: "Top Row & Punctuation", focus: "Top row", text: "qwer uiop q w e r u i o p. Students must cite all primary sources correctly." },
@@ -30,7 +28,6 @@ const CONTENT = {
     { title: "Mixed Practice", focus: "Study notes", text: "In conclusion, the study of historical events provides crucial context for understanding modern geopolitical conflicts." },
     { title: "Speed Test", focus: "Thesis block", text: "This paper argues that the rapid advancement of artificial intelligence will fundamentally reshape the global workforce, necessitating a shift in educational priorities and lifelong learning strategies for the next generation of professionals." }
   ],
-
   casual: [
     { title: "Home Row Basics", focus: "Home row", text: "asdf jkl; a s d f j k l ; asdf jkl; fads jalk lads jals" },
     { title: "Top Row & Punctuation", focus: "Top row", text: "qwer uiop q w e r u i o p! Hello, how are you doing today? I hope you're having a great time!" },
@@ -42,7 +39,6 @@ const CONTENT = {
   ]
 };
 
-// State
 let state = {
   currentMode: "casual",
   currentLessonIndex: 0,
@@ -61,30 +57,45 @@ let state = {
   }
 };
 
-// DOM
-const screens = {
-  landing: document.getElementById("screen-landing"),
-  lessons: document.getElementById("screen-lessons"),
-  typing: document.getElementById("screen-typing"),
-  results: document.getElementById("screen-results"),
-  certificate: document.getElementById("screen-certificate")
-};
+let screens, inputField, textDisplay;
 
-const inputField = document.getElementById("typing-input");
-const textDisplay = document.getElementById("text-display");
+function $(id) {
+  return document.getElementById(id);
+}
 
-// Init
 function init() {
+  // Cache DOM (and fail loudly if missing)
+  screens = {
+    landing: $("screen-landing"),
+    lessons: $("screen-lessons"),
+    typing: $("screen-typing"),
+    results: $("screen-results"),
+    certificate: $("screen-certificate")
+  };
+
+  inputField = $("typing-input");
+  textDisplay = $("text-display");
+
+  if (!screens.landing || !inputField || !textDisplay) {
+    console.error("Missing required HTML elements. Check index.html IDs.");
+    return;
+  }
+
   loadProgress();
   setupEventListeners();
   checkResume();
+  showScreen("landing");
 }
 
 function loadProgress() {
   const saved = localStorage.getItem("typing_master_progress");
   if (saved) {
-    state.progress = JSON.parse(saved);
-    if (!state.progress.lessonProgress) state.progress.lessonProgress = {};
+    try {
+      state.progress = JSON.parse(saved);
+      if (!state.progress.lessonProgress) state.progress.lessonProgress = {};
+    } catch {
+      state.progress = { lessonProgress: {}, lastMode: null, lastLessonIndex: 0 };
+    }
   }
 }
 
@@ -94,17 +105,48 @@ function saveProgress() {
   localStorage.setItem("typing_master_progress", JSON.stringify(state.progress));
 }
 
-function checkResume() {
-  const badge = document.getElementById("resume-badge");
-  const resumeText = document.getElementById("resume-text");
-  const resumeBtn = document.getElementById("btn-resume");
+function setupEventListeners() {
+  document.querySelectorAll(".mode-card").forEach((card) => {
+    card.addEventListener("click", () => selectMode(card.dataset.mode));
+  });
 
-  if (state.progress.lastMode && state.progress.lastLessonIndex !== null && state.progress.lastLessonIndex !== undefined) {
+  $("back-to-modes")?.addEventListener("click", () => showScreen("landing"));
+  $("back-to-lessons")?.addEventListener("click", () => showScreen("lessons"));
+
+  inputField.addEventListener("input", handleTyping);
+
+  $("retry-lesson")?.addEventListener("click", () => startLesson(state.currentLessonIndex));
+  $("next-lesson")?.addEventListener("click", () => {
+    if (state.currentLessonIndex < 6) startLesson(state.currentLessonIndex + 1);
+    else showCertificate();
+  });
+
+  $("close-cert")?.addEventListener("click", () => showScreen("lessons"));
+  $("download-cert")?.addEventListener("click", () => alert("Certificate download would start here in a real app!"));
+}
+
+function showScreen(screenId) {
+  Object.values(screens).forEach((s) => s.classList.remove("active"));
+  screens[screenId].classList.add("active");
+  if (screenId === "lessons") renderLessons();
+}
+
+function selectMode(mode) {
+  state.currentMode = mode;
+  state.lessons = CONTENT[mode] || [];
+  $("current-mode-display").textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
+  showScreen("lessons");
+}
+
+function checkResume() {
+  const badge = $("resume-badge");
+  if (!badge) return;
+
+  if (state.progress.lastMode && state.progress.lastLessonIndex !== undefined) {
     badge.style.display = "inline-flex";
     const modeName = state.progress.lastMode.charAt(0).toUpperCase() + state.progress.lastMode.slice(1);
-    resumeText.textContent = `Resume: Lesson ${state.progress.lastLessonIndex + 1} (${modeName})`;
-
-    resumeBtn.onclick = () => {
+    $("resume-text").textContent = `Resume: Lesson ${state.progress.lastLessonIndex + 1} (${modeName})`;
+    $("btn-resume").onclick = () => {
       selectMode(state.progress.lastMode);
       startLesson(state.progress.lastLessonIndex);
     };
@@ -113,47 +155,8 @@ function checkResume() {
   }
 }
 
-function setupEventListeners() {
-  // Mode cards
-  document.querySelectorAll(".mode-card").forEach((card) => {
-    card.addEventListener("click", () => selectMode(card.dataset.mode));
-  });
-
-  // Nav buttons
-  document.getElementById("back-to-modes").addEventListener("click", () => showScreen("landing"));
-  document.getElementById("back-to-lessons").addEventListener("click", () => showScreen("lessons"));
-
-  // Typing
-  inputField.addEventListener("input", handleTyping);
-
-  // Results
-  document.getElementById("retry-lesson").addEventListener("click", () => startLesson(state.currentLessonIndex));
-  document.getElementById("next-lesson").addEventListener("click", () => {
-    if (state.currentLessonIndex < 6) startLesson(state.currentLessonIndex + 1);
-    else showCertificate();
-  });
-
-  // Certificate
-  document.getElementById("close-cert").addEventListener("click", () => showScreen("lessons"));
-  document.getElementById("download-cert").addEventListener("click", () => alert("Certificate download would start here in a real app!"));
-}
-
-function showScreen(screenId) {
-  Object.values(screens).forEach((s) => s.classList.remove("active"));
-  screens[screenId].classList.add("active");
-
-  if (screenId === "lessons") renderLessons();
-}
-
-function selectMode(mode) {
-  state.currentMode = mode;
-  state.lessons = CONTENT[mode];
-  document.getElementById("current-mode-display").textContent = `Mode: ${mode.charAt(0).toUpperCase() + mode.slice(1)}`;
-  showScreen("lessons");
-}
-
 function renderLessons() {
-  const list = document.getElementById("lessons-list");
+  const list = $("lessons-list");
   list.innerHTML = "";
 
   let completedCount = 0;
@@ -162,8 +165,8 @@ function renderLessons() {
   }
 
   const totalPercent = (completedCount / 7) * 100;
-  document.getElementById("total-progress-bar").style.width = `${totalPercent}%`;
-  document.getElementById("progress-text").textContent = `${completedCount}/7 Lessons Completed`;
+  $("total-progress-bar").style.width = `${totalPercent}%`;
+  $("progress-text").textContent = `${completedCount}/7 Lessons Completed`;
 
   state.lessons.forEach((lesson, index) => {
     const item = document.createElement("div");
@@ -181,9 +184,7 @@ function renderLessons() {
             : ""
         }
       </div>
-      <div class="lesson-status">
-        ${isLocked ? "🔒" : isCompleted ? "✅" : "▶️"}
-      </div>
+      <div class="lesson-status">${isLocked ? "🔒" : isCompleted ? "✅" : "▶️"}</div>
     `;
 
     if (!isLocked) item.addEventListener("click", () => startLesson(index));
@@ -204,16 +205,16 @@ function startLesson(index) {
     isFinished: false
   };
 
-  document.getElementById("typing-lesson-title").textContent = `Lesson ${index + 1}: ${lesson.title}`;
-  document.getElementById("lesson-focus").textContent = `Focus: ${lesson.focus}`;
-  document.getElementById("live-wpm").textContent = "0 WPM";
-  document.getElementById("live-accuracy").textContent = "100% ACC";
-  document.getElementById("lesson-progress-bar").style.width = "0%";
+  $("typing-lesson-title").textContent = `Lesson ${index + 1}: ${lesson.title}`;
+  $("lesson-focus").textContent = `Focus: ${lesson.focus}`;
+  $("live-wpm").textContent = "0 WPM";
+  $("live-accuracy").textContent = "100% ACC";
+  $("lesson-progress-bar").style.width = "0%";
 
   renderText(lesson.text);
   inputField.value = "";
   showScreen("typing");
-  setTimeout(() => inputField.focus(), 100);
+  setTimeout(() => inputField.focus(), 50);
 }
 
 function renderText(text) {
@@ -262,17 +263,17 @@ function handleTyping(e) {
 
 function updateLiveStats() {
   const elapsedMinutes = (new Date() - state.typing.startTime) / 60000;
-  const wpm = elapsedMinutes > 0 ? Math.round(state.typing.currentIndex / 5 / elapsedMinutes) : 0;
+  const wpm = elapsedMinutes > 0 ? Math.round((state.typing.currentIndex / 5) / elapsedMinutes) : 0;
   const accuracy =
     state.typing.currentIndex > 0
       ? Math.round(((state.typing.currentIndex - state.typing.errors) / state.typing.currentIndex) * 100)
       : 100;
 
-  document.getElementById("live-wpm").textContent = `${wpm} WPM`;
-  document.getElementById("live-accuracy").textContent = `${accuracy}% ACC`;
+  $("live-wpm").textContent = `${wpm} WPM`;
+  $("live-accuracy").textContent = `${accuracy}% ACC`;
 
   const progressPercent = (state.typing.currentIndex / state.typing.totalChars) * 100;
-  document.getElementById("lesson-progress-bar").style.width = `${progressPercent}%`;
+  $("lesson-progress-bar").style.width = `${progressPercent}%`;
 }
 
 function finishLesson() {
@@ -280,11 +281,10 @@ function finishLesson() {
   inputField.blur();
 
   const elapsedMinutes = (new Date() - state.typing.startTime) / 60000;
-  const finalWpm = Math.round(state.typing.totalChars / 5 / elapsedMinutes);
+  const finalWpm = Math.round((state.typing.totalChars / 5) / elapsedMinutes);
   const finalAccuracy = Math.round(((state.typing.totalChars - state.typing.errors) / state.typing.totalChars) * 100);
 
   if (!state.progress.lessonProgress[state.currentMode]) state.progress.lessonProgress[state.currentMode] = {};
-
   const prevBest = state.progress.lessonProgress[state.currentMode][state.currentLessonIndex] || { bestWPM: 0, bestAccuracy: 0 };
 
   state.progress.lessonProgress[state.currentMode][state.currentLessonIndex] = {
@@ -295,27 +295,26 @@ function finishLesson() {
 
   saveProgress();
 
-  document.getElementById("final-wpm").textContent = finalWpm;
-  document.getElementById("final-accuracy").textContent = `${finalAccuracy}%`;
+  $("final-wpm").textContent = finalWpm;
+  $("final-accuracy").textContent = `${finalAccuracy}%`;
 
-  document.getElementById("next-lesson").textContent = state.currentLessonIndex === 6 ? "Get Certificate" : "Next Lesson";
-
+  $("next-lesson").textContent = state.currentLessonIndex === 6 ? "Get Certificate" : "Next Lesson";
   showScreen("results");
 }
 
 function showCertificate() {
   const mode = state.currentMode.toUpperCase();
   const stats = Object.values(state.progress.lessonProgress[state.currentMode] || {});
-  const avgWpm = stats.length ? Math.round(stats.reduce((acc, s) => acc + (s.bestWPM || 0), 0) / stats.length) : 0;
-  const avgAcc = stats.length ? Math.round(stats.reduce((acc, s) => acc + (s.bestAccuracy || 0), 0) / stats.length) : 0;
+  const avgWpm = stats.length ? Math.round(stats.reduce((acc, s) => acc + s.bestWPM, 0) / stats.length) : 0;
+  const avgAcc = stats.length ? Math.round(stats.reduce((acc, s) => acc + s.bestAccuracy, 0) / stats.length) : 0;
 
-  document.getElementById("cert-mode").textContent = `${mode} MODE`;
-  document.getElementById("cert-wpm").textContent = `${avgWpm} WPM (Avg)`;
-  document.getElementById("cert-accuracy").textContent = `${avgAcc}% Accuracy`;
-  document.getElementById("cert-date").textContent = new Date().toLocaleDateString();
+  $("cert-mode").textContent = `${mode} MODE`;
+  $("cert-wpm").textContent = `${avgWpm} WPM (Avg)`;
+  $("cert-accuracy").textContent = `${avgAcc}% Accuracy`;
+  $("cert-date").textContent = new Date().toLocaleDateString();
 
   showScreen("certificate");
 }
 
-// Start the app
-init();
+// Run AFTER the HTML is loaded
+document.addEventListener("DOMContentLoaded", init);
